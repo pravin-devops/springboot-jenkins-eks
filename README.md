@@ -13,3 +13,15 @@ e1783589e069: Preparing
 b6499503d2aa: Waiting
 no basic auth credentials
 script returned exit code 1
+sudo -i
+aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 463470972400.dkr.ecr.us-east-2.amazonaws.com
+docker push 463470972400.dkr.ecr.us-east-2.amazonaws.com/springboot-jenkins-ecr-repo:latest
+
+sudo usermod -aG docker $USER
+newgrp docker
+
+aws configure list
+
+aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 463470972400.dkr.ecr.us-east-2.amazonaws.com
+
+docker push 463470972400.dkr.ecr.us-east-2.amazonaws.com/springboot-jenkins-ecr-repo:latest
