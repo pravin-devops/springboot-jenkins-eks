@@ -1,0 +1,53 @@
+pipeline {
+    tools {
+        maven 'Maven3'
+    }
+    agent any
+    environment {
+        registry = "<<REPOSITORY URI>>"
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'github-credentials', url: '<<GITHUB REPO URL>>'
+            }
+        }
+        
+        stage('Build Jar') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        
+        stage('Building image') {
+          steps{
+            script {
+                sh 'whoami'
+                dockerImage = docker.build registry 
+            }
+          }
+        }
+        
+        
+        // Uploading Docker images into AWS ECR
+        stage('Pushing to ECR') {
+            steps{  
+                script {
+                    sh 'aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <ECR_URI>'
+                    sh 'docker push <<REPOSITORY URI>>:latest'
+                }
+            }
+        }
+        
+        
+        stage('K8S Deploy') {
+            steps{   
+                script {
+                    withKubeConfig([credentialsId: 'K8S', serverUrl: '']) {
+                    sh ('kubectl apply -f  eks-deploy-k8s.yaml')
+                    }
+                }
+            }
+        }
+    }
+}
